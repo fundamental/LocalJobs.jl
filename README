@@ -1,0 +1,31 @@
+LocalJobs.jl
+------------
+
+A local machine job server designed to operate on data serialized in HDF5 files.
+
+This project was born out of frustrating hangs and crashes that seemed to happen
+with any multithreading or continued use of a single process for very large
+datasets with a number of packages loaded.
+
+Concepts
+~~~~~~~~
+
+H5Task - a collection of independent jobs
+H5Job  - a single function call, f, which can be run from script, s, with
+         arguments, a via:
+         reload(s);lock(h5file);args=map(x->read(h5file[x]),a);unlock(h5file);result=f(args...);lock(h5file);apply_results(h5file,result);unlock(h5file);
+
+In some cases this model may spend too much time locking
+In those cases a page of shared memory shouold be used instead of a h5file
+
+
+Execution Model
+~~~~~~~~~~~~~~~
+
+1. Setup collection of jobs and initial hdf5 file params
+2. Launching Parallel Julia Instances
+3. For each julia instance lock the hdf5 file, consume a job's input, and unlock
+4. For each completed job lock the hdf5 file, dump results, unlock, and consume
+   another job or die
+5. Return From routine after optionally uniting results
+
