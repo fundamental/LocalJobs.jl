@@ -3,7 +3,7 @@ reload("src/master.jl")
 #Setup Task Parameters
 task         = H5Task("work.h5", "input/", "results/", H5Job[], Dict{Any,Any}())
 task["cols"] = 18
-script       = "example-job.jl"
+script       = "example/example-job.jl"
 func         = "job_function"
 
 #Define Individual Jobs

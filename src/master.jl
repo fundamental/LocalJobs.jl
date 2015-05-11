@@ -84,7 +84,7 @@ function run(task::H5Task, N::Int)
     for i=1:N
         #println(`julia -e \"reload(\"child.jl\");main(\"$taskfile\",\"$lockfile\")\"`)
         #println(readall(`julia -e reload(\"child.jl\");main(\"$taskfile\",\"$lockfile\")`))
-        push!(running, spawn(`julia -e
+        push!(running, spawn(`julia --depwarn=no -e
         "using LocalJobs;child_main(\"$taskfile\",\"$lockfile\")"`,
         (open("/dev/null","r"), open("stdout.$i.log","w"), open("stderr.$i.log","w"))))
     end
@@ -96,13 +96,24 @@ function run(task::H5Task, N::Int)
 
     println("Warnings: ")
     for i=1:N
-        println("Worker $i:")
-        println(readall(`cat stderr.$i.log`))
+        out = readall("stdout.$i.log")
+        err = readall("stderr.$i.log")
+        if(length(err) != 0)
+            println("Worker $i Errors:")
+            println(err)
+        end
+        if(length(out) != 0)
+            println("Worker $i Output:")
+            println(out)
+        end
     end
 
-    println("Cleanup Temporary Job Files[TODO]...")
-    #for i=1:N
-    #end
+    println("Cleanup Temporary Job Files...")
+    for i=1:N
+        rm("stdout.$i.log")
+        rm("stderr.$i.log")
+    end
+    rm(lockfile)
 
     println("Done...")
 

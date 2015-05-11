@@ -23,18 +23,19 @@ function get_job(task_file)
     h5open(task_file, "r+") do file
         id = 1
         while(true)
-            println('*')
+            #println('*')
             addr   = string("/sched/",id,"/taken")
             script = string("/sched/",id,"/script")
             func   = string("/sched/",id,"/func")
             args   = string("/sched/",id,"/args")
             if(!exists(file, addr))
-                println(":(")
+                #println(":(")
                 global has_job
                 has_job = false
                 break
             elseif(read(file[addr]) == 0)
-                println(":)")
+                #println(":)")
+                println("job id = $id")
                 global has_job
                 global job_info
                 has_job  = true
@@ -49,16 +50,16 @@ function get_job(task_file)
         end
     end
 
-    println("get_job...")
+    #println("get_job...")
     #has_job = false
 end
 
 function perform_job()
-    println("Performing job: ", job_info)
+    #println("Performing job: ", job_info)
     reload(job_info[2])
     global job_results
     job_results = eval(parse(string(job_info[3], "(job_info[4]...)")))
-    println("job results = ", job_results)
+    #println("job results = ", job_results)
 end
 
 function dump_results(task_file)
@@ -69,7 +70,7 @@ end
 
 
 function child_main(task_file, lock_file)
-    println("Main...");
+    #println("Main...");
     global has_job
     lock    = lock_create(lock_file)
     lock_id = fd(lock)
