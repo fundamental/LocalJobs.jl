@@ -1,4 +1,4 @@
-reload("master.jl")
+reload("src/master.jl")
 
 #Setup Task Parameters
 task         = H5Task("work.h5", "input/", "results/", H5Job[], Dict{Any,Any}())

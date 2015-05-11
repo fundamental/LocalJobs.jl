@@ -68,7 +68,7 @@ function dump_results(task_file)
 end
 
 
-function main(task_file, lock_file)
+function child_main(task_file, lock_file)
     println("Main...");
     global has_job
     lock    = lock_create(lock_file)

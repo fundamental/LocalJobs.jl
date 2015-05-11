@@ -84,13 +84,26 @@ function run(task::H5Task, N::Int)
     for i=1:N
         #println(`julia -e \"reload(\"child.jl\");main(\"$taskfile\",\"$lockfile\")\"`)
         #println(readall(`julia -e reload(\"child.jl\");main(\"$taskfile\",\"$lockfile\")`))
-        push!(running, spawn(`julia -e "reload(\"child.jl\");main(\"$taskfile\",\"$lockfile\")"`))
+        push!(running, spawn(`julia -e
+        "using LocalJobs;child_main(\"$taskfile\",\"$lockfile\")"`,
+        (open("/dev/null","r"), open("stdout.$i.log","w"), open("stderr.$i.log","w"))))
     end
 
     println("Merging Jobs...")
     for i=1:N
         wait(running[i])
     end
+
+    println("Warnings: ")
+    for i=1:N
+        println("Worker $i:")
+        println(readall(`cat stderr.$i.log`))
+    end
+
+    println("Cleanup Temporary Job Files[TODO]...")
+    #for i=1:N
+    #end
+
     println("Done...")
 
 end
