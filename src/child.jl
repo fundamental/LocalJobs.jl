@@ -73,7 +73,13 @@ Put the results into the task file
 """
 function dump_results(task_file)
     h5open(task_file, "r+") do file
-        file[string("/results/",job_info[1], "/result")] = job_results
+        if(!isa(job_results, Tuple))
+            file[string("/results/",job_info[1], "/result")] = job_results
+        else
+            for i=1:length(job_results)
+                file[string("/results/",job_info[1], "/result/",i)] = job_results[i]
+            end
+        end
     end
 end
 
