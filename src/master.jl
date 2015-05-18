@@ -2,7 +2,10 @@ import Base.run
 import Base.read
 using HDF5
 
-#Class Definitions
+"""
+A named collection of jobs, a hdf5 source/sink specification, and properties
+which can apply to any job
+"""
 type H5Task
     file
     source
@@ -12,6 +15,10 @@ type H5Task
 end
 
 
+"""
+A job which can be run parallel to other jobs with source arguments stored in
+the hdf5 file
+"""
 type H5Job
     task
     script
@@ -21,6 +28,11 @@ type H5Job
     id
 end
 
+"""
+Create a job which consists of running 'func'(map(read,'args')...) after loading
+'script'.
+This job in placed in 'task's collection of jobs
+"""
 function H5Job(task, script, func, args)
     hh = H5Job(task, script, func, args, Dict{Any,Any}(), length(task.jobs)+1)
     push!(task.jobs, hh)
@@ -31,20 +43,34 @@ function H5Job(task, script, func, args)
     hh
 end
 
+"""
+Provide an argument which can be accessed by any job
+"""
 function setindex!(task::H5Task, val, name::ASCIIString)
     task.props[name] = val
 end
 
+
+"""
+Provide an argument for the specific job.
+NOTE: this argument overrides any specified for the task
+"""
 function setindex!(job::H5Job, val, name::ASCIIString)
     job.props[name] = val
 end
 
+"""
+Read the results of a particular job
+"""
 function read(job::H5Job)
     h5open(job.task.file) do file
         read(file[string("/results/",job.id,"/result")])
     end
 end
 
+"""
+Run the task via N different child processes
+"""
 function run(task::H5Task, N::Int)
     gc()
     taskfile = task.file
@@ -94,7 +120,7 @@ function run(task::H5Task, N::Int)
         wait(running[i])
     end
 
-    println("Warnings: ")
+    println("Job Output...")
     for i=1:N
         out = readall("stdout.$i.log")
         err = readall("stderr.$i.log")
